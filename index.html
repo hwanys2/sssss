@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>초간단 정수 사칙연산</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --secondary: #3a0ca3;
+            --success: #4cc9f0;
+            --danger: #f72585;
+            --warning: #f8961e;
+            --background: #f8f9fa;
+            --card: #ffffff;
+            --text: #212529;
+        }
+
+        * {
+            box-sizing: border-box;
+            transition: all 0.3s ease;
+        }
+
+        body {
+            font-family: 'Nunito', Arial, sans-serif;
+            background-color: var(--background);
+            color: var(--text);
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            text-align: center;
+            line-height: 1.6;
+        }
+
+        h1 {
+            color: var(--primary);
+            margin-bottom: 2rem;
+            font-size: 2.5rem;
+            position: relative;
+            display: inline-block;
+        }
+
+        h1::after {
+            content: '';
+            position: absolute;
+            width: 50%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            bottom: -10px;
+            left: 25%;
+            border-radius: 10px;
+        }
+
+        .game-container {
+            background-color: var(--card);
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+            max-width: 90%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .stage-indicator {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .stage-dot {
+            width: 15px;
+            height: 15px;
+            background-color: #ddd;
+            border-radius: 50%;
+            margin: 0 8px;
+            transition: all 0.3s ease;
+        }
+
+        .stage-dot.active {
+            background-color: var(--primary);
+            transform: scale(1.2);
+        }
+
+        .progress-container {
+            background-color: #e9ecef;
+            border-radius: 10px;
+            height: 10px;
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--success));
+            width: 0%;
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+
+        .question {
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+            font-weight: bold;
+            color: var(--secondary);
+            background-color: rgba(67, 97, 238, 0.05);
+            padding: 1rem;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .question.new-question {
+            animation: questionPop 0.5s ease;
+        }
+
+        @keyframes questionPop {
+            0% { transform: scale(0.8); opacity: 0; }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .answer-container {
+            margin-bottom: 2rem;
+        }
+
+        .sign-buttons {
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        .sign-buttons button {
+            width: 3.5rem;
+            height: 3.5rem;
+            font-size: 2rem;
+            border: none;
+            border-radius: 50%;
+            background-color: var(--primary);
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.3);
+        }
+
+        .sign-buttons button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(67, 97, 238, 0.4);
+        }
+
+        .sign-buttons button:active {
+            transform: translateY(0);
+            box-shadow: 0 3px 10px rgba(67, 97, 238, 0.3);
+        }
+
+        input[type="text"] {
+            font-size: 1.5rem;
+            padding: 0.8rem 1.2rem;
+            margin: 0.5rem;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            width: 60%;
+            text-align: center;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.05);
+            outline: none;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.25);
+        }
+
+        button.submit-btn {
+            font-size: 1.3rem;
+            padding: 0.8rem 2rem;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(67, 97, 238, 0.3);
+        }
+
+        button.submit-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(67, 97, 238, 0.4);
+        }
+
+        button.submit-btn:active {
+            transform: translateY(0);
+            box-shadow: 0 3px 10px rgba(67, 97, 238, 0.3);
+        }
+
+        #result {
+            margin-top: 1.5rem;
+            font-size: 1.25rem;
+            min-height: 2rem;
+            padding: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .correct {
+            color: var(--success);
+            animation: correctAnswer 0.7s ease;
+        }
+
+        .incorrect {
+            color: var(--danger);
+            animation: shake 0.5s ease;
+        }
+
+        @keyframes correctAnswer {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-10px); }
+            40%, 80% { transform: translateX(10px); }
+        }
+
+        .stats-container {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            background-color: var(--card);
+            border-radius: 10px;
+            padding: 1rem;
+            min-width: 45%;
+            margin-bottom: 1rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #6c757d;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+            
+            .game-container {
+                padding: 1.5rem;
+            }
+            
+            .question {
+                font-size: 2rem;
+            }
+            
+            input[type="text"] {
+                width: 80%;
+            }
+            
+            .sign-buttons button {
+                width: 3rem;
+                height: 3rem;
+            }
+        }
+
+        .confetti {
+            position: fixed;
+            width: 10px;
+            height: 10px;
+            background-color: #f00;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: fall 3s ease-in-out;
+            z-index: 1000;
+        }
+
+        @keyframes fall {
+            0% {
+                transform: translateY(-100vh) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>초간단 정수 사칙연산</h1>
+    
+    <div class="game-container">
+        <div class="stage-indicator">
+            <div class="stage-dot active"></div>
+            <div class="stage-dot"></div>
+            <div class="stage-dot"></div>
+            <div class="stage-dot"></div>
+        </div>
+        
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar"></div>
+        </div>
+        
+        <div class="question" id="question">문제 로딩 중...</div>
+        
+        <div class="answer-container">
+            <div class="sign-buttons">
+                <button onclick="setSign('+')">+</button>
+                <button onclick="setSign('-')">-</button>
+            </div>
+
+            <input type="text" id="answerInput" inputmode="numeric" pattern="[-+]?[0-9]*" placeholder="정답 입력 (예: +5 또는 -3)">
+            <br>
+            <button class="submit-btn" onclick="submitAnswer()">정답 제출</button>
+        </div>
+        
+        <div id="result"></div>
+    </div>
+    
+    <div class="stats-container">
+        <div class="stat-item">
+            <div class="stat-label">단계</div>
+            <div class="stat-value" id="stageValue">1</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-label">정확도</div>
+            <div class="stat-value" id="accuracyValue">0%</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-label">문제</div>
+            <div class="stat-value" id="questionValue">0/10</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-label">소요 시간</div>
+            <div class="stat-value" id="timeValue">0초</div>
+        </div>
+    </div>
+
+    <script>
+        let stage = 1;
+        let questionCount = 0;
+        let correctCount = 0;
+        let startTime;
+        let currentAnswer = 0;
+        let currentOp = "";
+        let currentA = 0;
+        let currentB = 0;
+        let timer;
+
+        function updateStageIndicator() {
+            const dots = document.querySelectorAll('.stage-dot');
+            dots.forEach((dot, index) => {
+                dot.classList.toggle('active', index + 1 === stage);
+            });
+            document.getElementById('stageValue').textContent = stage;
+        }
+
+        function updateProgressBar() {
+            const progressBar = document.getElementById('progressBar');
+            progressBar.style.width = `${(questionCount / 10) * 100}%`;
+            document.getElementById('questionValue').textContent = `${questionCount}/10`;
+        }
+
+        function updateTimeDisplay() {
+            if (questionCount > 0 && startTime) {
+                const timeSpent = Math.floor((Date.now() - startTime) / 1000);
+                document.getElementById('timeValue').textContent = `${timeSpent}초`;
+            }
+        }
+
+        function updateAccuracyDisplay() {
+            const accuracy = questionCount > 0 ? Math.round((correctCount / questionCount) * 100) : 0;
+            document.getElementById('accuracyValue').textContent = `${accuracy}%`;
+        }
+
+        function startTimer() {
+            clearInterval(timer);
+            timer = setInterval(updateTimeDisplay, 1000);
+        }
+
+        function setSign(sign) {
+            const input = document.getElementById("answerInput");
+            if (!input.value.startsWith("+") && !input.value.startsWith("-")) {
+                input.value = sign + input.value;
+                input.focus();
+            } else {
+                input.value = sign + input.value.slice(1);
+                input.focus();
+            }
+        }
+
+        function generateQuestion(stage) {
+            const questionElement = document.getElementById("question");
+            questionElement.classList.remove('new-question');
+            
+            // Trigger reflow to restart animation
+            void questionElement.offsetWidth;
+            
+            const a = Math.floor(Math.random() * 41) - 20;
+            const b = Math.floor(Math.random() * 41) - 20;
+            const ops = ["+", "-", "*", "/"];
+            let op;
+
+            if (stage === 1) op = "+";
+            else if (stage === 2) op = "-";
+            else if (stage === 3) op = Math.random() < 0.5 ? "*" : "/";
+            else op = ops[Math.floor(Math.random() * ops.length)];
+
+            currentA = a;
+            currentB = b;
+            currentOp = op;
+
+            if (op === "/") {
+                currentB = Math.floor(Math.random() * 9) + 1;
+                currentAnswer = Math.floor(Math.random() * 21) - 10;
+                currentA = currentB * currentAnswer;
+            } else {
+                currentAnswer = eval(currentA + op + currentB);
+            }
+
+            questionElement.textContent = `(${currentA > 0 ? '+' + currentA : currentA}) ${op} (${currentB > 0 ? '+' + currentB : currentB}) = ?`;
+            questionElement.classList.add('new-question');
+            
+            document.getElementById("answerInput").value = "";
+            document.getElementById("result").textContent = "";
+            document.getElementById("result").className = "";
+        }
+
+        function createConfetti() {
+            const colors = ['#f72585', '#4361ee', '#4cc9f0', '#3a0ca3', '#f8961e'];
+            
+            for (let i = 0; i < 100; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                confetti.style.left = `${Math.random() * 100}vw`;
+                confetti.style.animationDuration = `${Math.random() * 2 + 2}s`;
+                confetti.style.width = `${Math.random() * 10 + 5}px`;
+                confetti.style.height = `${Math.random() * 10 + 5}px`;
+                
+                document.body.appendChild(confetti);
+                
+                // Remove confetti after animation ends
+                setTimeout(() => {
+                    confetti.remove();
+                }, 3000);
+            }
+        }
+
+        function playSound(type) {
+            const audio = new Audio();
+            
+            if (type === 'correct') {
+                audio.src = 'data:audio/mpeg;base64,SUQzBAAAAAABEVRYWFgAAAAtAAADY29tbWVudABCaWdTb3VuZEJhbmsuY29tIC8gTGFTb25vdGhlcXVlLm9yZwBURU5DAAAAHQAAA1N3aXRjaCBQbHVzIMKpIE5DSCBTb2Z0d2FyZQBUSVQyAAAABgAAAzIyMzUAVFNTRQAAAA8AAANMYXZmNTcuODMuMTAwAAAAAAAAAAAAAAD/80DEAAAAA0gAAAAATEFNRTMuMTAwVVVVVVVVVVVVVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zQsRbAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zQMSkAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV';
+            } else {
+                audio.src = 'data:audio/mpeg;base64,SUQzBAAAAAABEVRYWFgAAAAtAAADY29tbWVudABCaWdTb3VuZEJhbmsuY29tIC8gTGFTb25vdGhlcXVlLm9yZwBURU5DAAAAHQAAA1N3aXRjaCBQbHVzIMKpIE5DSCBTb2Z0d2FyZQBUSVQyAAAABgAAAzIyMzUAVFNTRQAAAA8AAANMYXZmNTcuODMuMTAwAAAAAAAAAAAAAAD/80DEAAAAA0gAAAAATEFNRTMuMTAwVVVVVVVVVVVVVUxBTUUzLjEwMFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zQsRbAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVf/zQMSkAAADSAAAAABVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVV';
+            }
+            
+            audio.play().catch(e => console.log('Sound play failed:', e));
+        }
+
+        function submitAnswer() {
+            const rawInput = document.getElementById("answerInput").value.trim();
+            const userVal = parseInt(rawInput);
+            
+            if (isNaN(userVal)) {
+                alert("정수를 입력하세요.");
+                return;
+            }
+
+            const userSign = rawInput.startsWith("-") ? "-" : "+";
+            const answerSign = currentAnswer < 0 ? "-" : "+";
+            const resultElement = document.getElementById("result");
+            resultElement.className = "";
+
+            if (questionCount === 0) {
+                startTime = Date.now();
+                startTimer();
+            }
+
+            if (userSign !== answerSign && userVal !== currentAnswer) {
+                resultElement.textContent = "부호와 계산이 모두 틀렸습니다. 다시 시도해보세요.";
+                resultElement.className = "incorrect";
+                playSound('wrong');
+                return;
+            } else if (userSign !== answerSign) {
+                resultElement.textContent = "부호가 틀렸습니다. 다시 시도해보세요.";
+                resultElement.className = "incorrect";
+                playSound('wrong');
+                return;
+            } else if (userVal !== currentAnswer) {
+                resultElement.textContent = "계산 결과가 틀렸습니다. 다시 시도해보세요.";
+                resultElement.className = "incorrect";
+                playSound('wrong');
+                return;
+            }
+
+            // If we get here, the answer is correct
+            resultElement.textContent = "정답입니다!";
+            resultElement.className = "correct";
+            playSound('correct');
+            questionCount++;
+            correctCount++;
+            
+            updateProgressBar();
+            updateAccuracyDisplay();
+
+            if (questionCount >= 10) {
+                const timeSpent = (Date.now() - startTime) / 1000;
+                const accuracy = correctCount / 10;
+                const accuracyScore = Math.round(accuracy * 50);
+                const speedScore = timeSpent < 60 ? 50 : Math.max(0, Math.round((120 - timeSpent) / 60 * 50));
+                const totalScore = accuracyScore + speedScore;
+
+                clearInterval(timer);
+
+                if (totalScore >= 70) {
+                    if (stage < 4) {
+                        setTimeout(() => {
+                            createConfetti();
+                            alert(`통과! 다음 단계로 이동합니다.\n점수: ${totalScore}\n정확도: ${accuracyScore}/50\n속도: ${speedScore}/50`);
+                            stage++;
+                            updateStageIndicator();
+                            resetStage();
+                        }, 1000);
+                    } else {
+                        setTimeout(() => {
+                            createConfetti();
+                            alert(`축하합니다! 모든 단계를 완료했습니다!\n최종 점수: ${totalScore}\n정확도: ${accuracyScore}/50\n속도: ${speedScore}/50`);
+                            resetStage(true);
+                        }, 1000);
+                    }
+                    return;
+                } else {
+                    setTimeout(() => {
+                        alert(`다시 도전하세요.\n점수: ${totalScore}\n정확도: ${accuracyScore}/50\n속도: ${speedScore}/50`);
+                        resetStage();
+                    }, 1000);
+                    return;
+                }
+            }
+
+            setTimeout(() => {
+                generateQuestion(stage);
+            }, 1000);
+        }
+
+        function resetStage(final = false) {
+            questionCount = 0;
+            correctCount = 0;
+            updateProgressBar();
+            updateAccuracyDisplay();
+            document.getElementById('timeValue').textContent = '0초';
+            if (!final) generateQuestion(stage);
+        }
+
+        window.onload = () => {
+            updateStageIndicator();
+            generateQuestion(stage);
+            
+            // Add event listener for Enter key
+            document.getElementById("answerInput").addEventListener("keypress", function(event) {
+                if (event.key === "Enter") {
+                    event.preventDefault();
+                    submitAnswer();
+                }
+            });
+        };
+    </script>
+</body>
+</html>
